@@ -31,7 +31,7 @@ export function SearchBox() {
                         <PopoverTrigger asChild>
                             <Button size={"sm"} variant="outline" style={{position: "absolute", top: 10, right: 10}}><PaletteIcon />Customize</Button>
                         </PopoverTrigger>
-                        <PopoverContent side="bottom" align="end" sideOffset={10}>
+                        <PopoverContent side="bottom" align="end" sideOffset={10} style={{minWidth: "0px", width: "auto", padding: 0, boxShadow: "none"}}>
                             <SketchPicker onChange={(e) => {
                                 setConfig({
                                     ...config,
@@ -49,12 +49,12 @@ export function SearchBox() {
                     <Input className="bg-white" placeholder="Search with Google" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyPress={handleSearch} />
                     <Button variant="outline" onClick={() => {handleSearch(null)}}><SearchIcon />Search</Button>
                 </div>
-                {(isEditing || config.searchbox.shortcuts.length > 0) && <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} transition={{ duration: 0.2 }} layout key="searchbox-shortcuts" className="SearchBoxShortcutsRow">
+                {(isEditing || config.searchbox.shortcuts.length > 0) && <div className="SearchBoxShortcutsRow">
                     {config.searchbox.shortcuts.map((shortcut, index) => (
                         <ShortcutItem key={index} shortcut={shortcut}/>
                     ))}
                     {isEditing && <AddShortcutItem/>}
-                </motion.div>}
+                </div>}
             </div>
         </AnimatePresence>
     )
