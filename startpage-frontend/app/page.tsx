@@ -4,6 +4,7 @@ import { SearchBox } from "@/components/searchbox";
 import { useState, useEffect } from "react";
 import { createContext } from "react";
 import { useAuth } from "keystone-lib";
+import { FacebookCard } from "@/components/cards";
 
 export const StartPageContext = createContext({
   isEditing: false,
@@ -30,15 +31,17 @@ export default function Home() {
       setHasWork(true);
     }
   }, [authHook.data]);
-  const [config, setConfig] = useState({
+  const [config, setConfig] = useState(JSON.parse(window?.localStorage.getItem("config") || null) || {
     searchbox: {
       shortcuts: [
         {
+          id: new Date().toISOString() + "_ranid_" + Math.floor(Math.random() * 1000000),
           name: "Google",
           url: "https://www.google.com",
           icon: "https://www.google.com/favicon.ico"
         },
         {
+          id: new Date().toISOString() + "_ranid_" + Math.floor(Math.random() * 1000000),
           name: "YouTube",
           url: "https://www.youtube.com",
           icon: "https://www.youtube.com/favicon.ico"
@@ -47,12 +50,16 @@ export default function Home() {
       color: "#097452"
     }
   });
+  useEffect(() => {
+    window.localStorage.setItem("config", JSON.stringify(config));
+  }, [config]);
   const [usingWork, setUsingWork] = useState(false);
   return (
     <StartPageContext.Provider value={{ isEditing, setIsEditing, config, setConfig, usingWork, setUsingWork, hasWork, authHook: usingWork ? authHook : null }}>
       <div>
         <Header />
         <SearchBox />
+        {/* <FacebookCard profileName="LinusTech"/> */}
       </div>
     </StartPageContext.Provider>
   );
