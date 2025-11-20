@@ -61,11 +61,18 @@ export default function Home() {
   }, [config]);
   const [usingWork, setUsingWork] = useState(false);
   const swapy = useRef<Swapy | null>(null)
+  const [slotItemMap, setSlotItemMap] = useState<Record<string, string | null>>({});
+
   useEffect(() => {
     if (swappyAreaRef.current) {
       swapy.current = createSwapy(swappyAreaRef.current, {
         animation: 'dynamic',
-        manualSwap: true,
+      })
+
+      // Listen for swap events and update the map
+      swapy.current.onSwap((event) => {
+        // Update the slot item map based on the swap event
+        setSlotItemMap(event.newSlotItemMap.asObject);
       })
     }
     return () => {
@@ -95,19 +102,7 @@ export default function Home() {
 }
 
 function Column({ index, swapy }: { index: number, swapy: React.RefObject<Swapy | null> }) {
-  const [cardCount, setCardCount] = useState(0);
   const { isEditing } = useContext(StartPageContext);
-  useEffect(() => {
-    if (swapy.current) {
-      swapy.current.onSwap((e) => {
-        if (e.fromSlot.startsWith("column_" + index + "_")) {
-          setCardCount(cardCount - 1);
-        } else if (e.toSlot.startsWith("column_" + index + "_")) {
-          setCardCount(cardCount + 1);
-        }
-      })
-    }
-  }, [swapy]);
   return (
     <div className="flex-1">
       <AnimatePresence>
@@ -115,7 +110,7 @@ function Column({ index, swapy }: { index: number, swapy: React.RefObject<Swapy 
           Column {index}
         </motion.div> : null}
         {/* <CardBase index={index} /> */}
-        {Array.from({ length: cardCount + 1 }).map((_, index2) => (
+        {Array.from({ length: 5 }).map((_, index2) => (
           <div key={index2}>
             <div>Slot {index2}</div>
             <div style={{ minHeight: 100 }} data-swapy-slot={"column_" + index + "_" + index2}>
