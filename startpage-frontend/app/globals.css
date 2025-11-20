@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+    font-family: 'Calculator';
+    src: url('/7segment.ttf');
+}
+
 * {
   --qu-accent: #1c8b5f;
   --qu-background: rgb(245, 245, 245);

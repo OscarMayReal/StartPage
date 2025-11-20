@@ -1,29 +1,37 @@
 "use client"
 import { Header } from "@/components/header";
 import { SearchBox } from "@/components/searchbox";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createContext } from "react";
 import { useAuth } from "keystone-lib";
-import { FacebookCard } from "@/components/cards";
+import { CalculatorCard, FacebookCard } from "@/components/cards";
+import { createSwapy } from 'swapy'
 
 export const StartPageContext = createContext({
   isEditing: false,
-  setIsEditing: (value: boolean) => {},
+  setIsEditing: (value: boolean) => { },
   config: {
     searchbox: {
       shortcuts: [],
       color: "#097452"
-    }
+    },
+    columns: 3
   },
   usingWork: false,
-  setUsingWork: (value: boolean) => {},
+  setUsingWork: (value: boolean) => { },
   hasWork: false,
-  setConfig: (value: any) => {},
-  authHook: null as any
+  setConfig: (value: any) => { },
+  authHook: null as any,
 })
 
 export default function Home() {
-  const authHook = useAuth({appId: process.env.NEXT_PUBLIC_APP_ID!, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL!});
+  const swappyAreaRef = useRef<HTMLDivElement>(null)
+  const [swapy, setSwapy] = useState(null)
+  useEffect(() => {
+    var s = createSwapy(swappyAreaRef.current)
+    setSwapy(s)
+  }, [swappyAreaRef])
+  const authHook = useAuth({ appId: process.env.NEXT_PUBLIC_APP_ID!, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL! });
   const [isEditing, setIsEditing] = useState(false);
   const [hasWork, setHasWork] = useState(false);
   useEffect(() => {
@@ -48,7 +56,8 @@ export default function Home() {
         }
       ],
       color: "#097452"
-    }
+    },
+    columns: 3
   });
   useEffect(() => {
     window.localStorage.setItem("config", JSON.stringify(config));
@@ -60,6 +69,19 @@ export default function Home() {
         <Header />
         <SearchBox />
         {/* <FacebookCard profileName="LinusTech"/> */}
+        {/* <CalculatorCard /> */}
+        <div className="flex flex-row w-full" ref={swappyAreaRef}>
+          {Array.from({ length: config.columns }).map((_, index) => (
+            <div key={index} className="flex-1">
+              <div data-swapy-slot={"column_" + index}>
+                Column {index}
+                <div data-swapy-item={"column_" + index}>
+                  test item {index}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </StartPageContext.Provider>
   );
