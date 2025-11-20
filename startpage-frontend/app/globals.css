@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
-    font-family: 'Calculator';
-    src: url('/7segment.ttf');
+  font-family: 'Calculator';
+  src: url('/7segment.ttf');
 }
 
 * {
@@ -41,84 +41,111 @@ header {
 }
 
 .HeaderLogo {
-    height: 25px;
-    padding-left: 15px;
+  height: 25px;
+  padding-left: 15px;
 }
 
 .SearchBoxArea {
-    /* height: 100px; */
-    width: 100%;
-    border-bottom: 1px solid var(--qu-border-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--qu-searcharea-background);
-    padding-top: 40px;
-    padding-bottom: 40px;
-    transition: all 0.2s ease-in-out;
-    height: fit-content;
-    position: relative;
+  /* height: 100px; */
+  width: 100%;
+  border-bottom: 1px solid var(--qu-border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--qu-searcharea-background);
+  padding-top: 40px;
+  padding-bottom: 40px;
+  transition: all 0.2s ease-in-out;
+  height: fit-content;
+  position: relative;
 }
 
 .SearchBoxRow {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 50%;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  gap: 10px;
 }
 
 .SearchBoxShortcutsRow {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 75%;
-    gap: 10px;
-    padding-top: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 75%;
+  gap: 10px;
+  padding-top: 40px;
 }
 
 .SearchBoxShortcutItem {
-    padding: 10px;
-    height: 100px;
-    width: 150px;
-    background-color: var(--header-background);
-    border: 1px solid var(--qu-border-color);
-    border-radius: 5px;
-    transition: all 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
+  padding: 10px;
+  height: 100px;
+  width: 150px;
+  background-color: var(--header-background);
+  border: 1px solid var(--qu-border-color);
+  border-radius: 5px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+[data-swapy-highlighted] {
+  background-color: var(--header-background);
 }
 
 .SearchBoxShortcutIcon {
-    width: 25px;
-    height: 25px;
+  width: 25px;
+  height: 25px;
 }
 
 .SearchBoxShortcutText {
-    font-size: 14px;
-    color: var(--qu-text);
+  font-size: 14px;
+  color: var(--qu-text);
 }
 
 .SearchBoxShortcutSubText {
-    font-size: 12px;
-    color: var(--qu-text-secondary);
+  font-size: 12px;
+  color: var(--qu-text-secondary);
 }
 
 .SearchBoxShortcutItem:hover {
-    background-color: var(--qu-background);
+  background-color: var(--qu-background);
 }
 
 .SearchBoxShortcutEdit {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.card-base {
+  background-color: var(--header-background);
+  border: 1px solid var(--qu-border-color);
+  border-radius: 5px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.card-title {
+  width: 100%;
+  text-align: center;
+}
+
+.card-content {
+  width: 100%;
+  text-align: center;
 }
 
 @theme inline {
@@ -234,6 +261,7 @@ header {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

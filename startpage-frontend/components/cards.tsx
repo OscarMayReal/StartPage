@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Parser } from 'expr-eval';
+import { StartPageContext } from "@/app/page";
 
 const parser = new Parser();
 
@@ -12,7 +13,7 @@ export function FacebookCard({
 }) {
     return (
         <div>
-            <iframe src={"https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F" + profileName + "&tabs=timeline&width=340&height=331&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"} width="340" height="331" style={{border: "none", overflow: "hidden"}} scrolling="no" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+            <iframe src={"https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F" + profileName + "&tabs=timeline&width=340&height=331&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"} width="340" height="331" style={{ border: "none", overflow: "hidden" }} scrolling="no" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
         </div>
     )
 }
@@ -62,14 +63,14 @@ export function CalculatorCard() {
         screenref.current?.scrollTo({ left: screenref.current?.scrollWidth || 0 });
         screenref.current?.focus();
     }, [screenDisplay]);
-    return <div className="w-[204px] p-4 flex flex-col gap-2 bg-[var(--background)] rounded-xl" style={{borderColor: "var(--qu-border-color)", border: "1px solid var(--qu-border-color)"}}>
+    return <div className="w-[204px] p-4 flex flex-col gap-2 bg-[var(--background)] rounded-xl" style={{ borderColor: "var(--qu-border-color)", border: "1px solid var(--qu-border-color)" }}>
         <input ref={screenref} value={screenDisplay} inputMode="numeric" onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === "=") {
                 e.preventDefault();
                 let result = parser.evaluate(screenDisplay);
                 setScreenDisplay(result.toString());
             }
-        }} onChange={(e) => setScreenDisplay(e.target.value)} className="text-4xl w-full p-1 rounded-sm" style={{backgroundColor: "var(--qu-background)", color: "var(--qu-text)", borderColor: "var(--qu-border-color)", border: "1px solid var(--qu-border-color)"}}/>
+        }} onChange={(e) => setScreenDisplay(e.target.value)} className="text-4xl w-full p-1 rounded-sm" style={{ backgroundColor: "var(--qu-background)", color: "var(--qu-text)", borderColor: "var(--qu-border-color)", border: "1px solid var(--qu-border-color)" }} />
         <div className="flex flex-col gap-1">
             <div className="flex gap-1 w-fit">
                 <Button className="w-10 h-10" onClick={() => setScreenDisplay(screenDisplay + "1")}>1</Button>
@@ -100,4 +101,16 @@ export function CalculatorCard() {
             </div>
         </div>
     </div>
+}
+
+export function CardBase({ name, content }: { name: string, content: React.ReactNode }) {
+    const { isEditing } = useContext(StartPageContext);
+    return (
+        <div className="card-base">
+            <div className="card-title" style={{ cursor: isEditing ? "move" : "default", pointerEvents: isEditing ? "auto" : "none" }} data-swapy-handle>{name}</div>
+            <div className="card-content">
+                {content}
+            </div>
+        </div>
+    )
 }

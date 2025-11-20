@@ -1,11 +1,13 @@
 "use client"
 import { Header } from "@/components/header";
 import { SearchBox } from "@/components/searchbox";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { createContext } from "react";
 import { useAuth } from "keystone-lib";
-import { CalculatorCard, FacebookCard } from "@/components/cards";
-import { createSwapy } from 'swapy'
+import { CalculatorCard, CardBase, FacebookCard } from "@/components/cards";
+import { createSwapy, Swapy } from 'swapy'
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export const StartPageContext = createContext({
   isEditing: false,
@@ -26,11 +28,6 @@ export const StartPageContext = createContext({
 
 export default function Home() {
   const swappyAreaRef = useRef<HTMLDivElement>(null)
-  const [swapy, setSwapy] = useState(null)
-  useEffect(() => {
-    var s = createSwapy(swappyAreaRef.current)
-    setSwapy(s)
-  }, [swappyAreaRef])
   const authHook = useAuth({ appId: process.env.NEXT_PUBLIC_APP_ID!, keystoneUrl: process.env.NEXT_PUBLIC_KEYSTONE_URL! });
   const [isEditing, setIsEditing] = useState(false);
   const [hasWork, setHasWork] = useState(false);
@@ -63,6 +60,18 @@ export default function Home() {
     window.localStorage.setItem("config", JSON.stringify(config));
   }, [config]);
   const [usingWork, setUsingWork] = useState(false);
+  const swapy = useRef<Swapy | null>(null)
+  useEffect(() => {
+    if (swappyAreaRef.current) {
+      swapy.current = createSwapy(swappyAreaRef.current, {
+        animation: 'dynamic',
+        manualSwap: true,
+      })
+    }
+    return () => {
+      swapy.current?.destroy()
+    }
+  }, [swappyAreaRef, config.columns])
   return (
     <StartPageContext.Provider value={{ isEditing, setIsEditing, config, setConfig, usingWork, setUsingWork, hasWork, authHook: usingWork ? authHook : null }}>
       <div>
@@ -70,19 +79,51 @@ export default function Home() {
         <SearchBox />
         {/* <FacebookCard profileName="LinusTech"/> */}
         {/* <CalculatorCard /> */}
-        <div className="flex flex-row w-full" ref={swappyAreaRef}>
+        <div className="flex flex-row w-full gap-3 px-3" ref={swappyAreaRef}>
           {Array.from({ length: config.columns }).map((_, index) => (
-            <div key={index} className="flex-1">
-              <div data-swapy-slot={"column_" + index}>
-                Column {index}
-                <div data-swapy-item={"column_" + index}>
-                  test item {index}
-                </div>
-              </div>
-            </div>
+            <Column index={index} key={index} swapy={swapy} />
           ))}
+          <div data-swapy-slot="add-column">
+            <div data-swapy-item="calc1">
+              <CardBase name="Calculator" content={<CalculatorCard />} />
+            </div>
+          </div>
         </div>
       </div>
     </StartPageContext.Provider>
   );
+}
+
+function Column({ index, swapy }: { index: number, swapy: React.RefObject<Swapy | null> }) {
+  const [cardCount, setCardCount] = useState(0);
+  const { isEditing } = useContext(StartPageContext);
+  useEffect(() => {
+    if (swapy.current) {
+      swapy.current.onSwap((e) => {
+        if (e.fromSlot.startsWith("column_" + index + "_")) {
+          setCardCount(cardCount - 1);
+        } else if (e.toSlot.startsWith("column_" + index + "_")) {
+          setCardCount(cardCount + 1);
+        }
+      })
+    }
+  }, [swapy]);
+  return (
+    <div className="flex-1">
+      <AnimatePresence>
+        {isEditing ? <motion.div key={"column_" + index + "_title"} initial={{ opacity: 0, height: 0, margin: 0 }} animate={{ opacity: 1, height: "auto", margin: 10 }} exit={{ opacity: 0, height: 0, margin: 0 }} style={{ textAlign: "center" }}>
+          Column {index}
+        </motion.div> : null}
+        {/* <CardBase index={index} /> */}
+        {Array.from({ length: cardCount + 1 }).map((_, index2) => (
+          <div key={index2}>
+            <div>Slot {index2}</div>
+            <div style={{ minHeight: 100 }} data-swapy-slot={"column_" + index + "_" + index2}>
+
+            </div>
+          </div>
+        ))}
+      </AnimatePresence>
+    </div>
+  )
 }
