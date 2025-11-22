@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Parser } from 'expr-eval';
 import { StartPageContext } from "@/app/page";
-import { ActivityIcon, BoxIcon, SearchIcon, SendIcon, SparkleIcon, XIcon } from "lucide-react";
+import { ActivityIcon, BookIcon, BoxIcon, CalculatorIcon, CatIcon, ClockIcon, FacebookIcon, SearchIcon, SendIcon, Sparkle, SparkleIcon, SparklesIcon, SunIcon, XIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 const parser = new Parser();
@@ -306,4 +306,115 @@ export function CardBase({ id, name, content, globalConfig, setGlobalConfig }: {
             </div>
         </div>
     )
+}
+
+export type WidgetType = "facebook" | "weather" | "chatgpt" | "siegeleaderboard" | "calculator" | "clock" | "catphoto" | "dictionary";
+
+export type WidgetInfo = {
+    name: string;
+    description: string;
+    icon: any;
+    createComponent: (config: any, setConfig: any) => React.ReactNode;
+    type: WidgetType;
+    configOptions: Record<string, WidgetConfigSchema>;
+}
+
+export type WidgetConfigSchema = {
+    name: string;
+    type: "text" | "number" | "boolean";
+    defaultValue: any;
+    field: string;
+}
+
+export const CardInfo: Record<WidgetType, WidgetInfo> = {
+    siegeleaderboard: {
+        name: "Hack Club Siege Leaderboard",
+        description: "View the leaderboard for Hack Club Siege",
+        icon: SparkleIcon,
+        createComponent: (config: any, setConfig: any) => <HackclubSiegeLeaderboardCard />,
+        type: "siegeleaderboard",
+        configOptions: {
+
+        }
+    },
+    calculator: {
+        name: "Calculator",
+        description: "A simple calculator",
+        icon: CalculatorIcon,
+        createComponent: (config: any, setConfig: any) => <CalculatorCard />,
+        type: "calculator",
+        configOptions: {
+
+        }
+    },
+    weather: {
+        name: "Weather",
+        description: "View the weather",
+        icon: SunIcon,
+        createComponent: (config: any, setConfig: any) => <WeatherCard location={config.location} />,
+        type: "weather",
+        configOptions: {
+            location: {
+                name: "Location",
+                type: "text",
+                defaultValue: "London",
+                field: "location"
+            }
+        }
+    },
+    clock: {
+        name: "Clock",
+        description: "View the time",
+        icon: ClockIcon,
+        createComponent: (config: any, setConfig: any) => <ClockCard />,
+        type: "clock",
+        configOptions: {
+
+        }
+    },
+    facebook: {
+        name: "Facebook",
+        description: "View a Facebook feed",
+        icon: FacebookIcon,
+        createComponent: (config: any, setConfig: any) => <FacebookCard profileName={config.page} />,
+        type: "facebook",
+        configOptions: {
+            page: {
+                name: "Page",
+                type: "text",
+                defaultValue: "facebook",
+                field: "page"
+            }
+        }
+    },
+    chatgpt: {
+        name: "ChatGPT",
+        description: "Quickly get an answer to your question",
+        icon: SparklesIcon,
+        createComponent: (config: any, setConfig: any) => <AskChatGPTCard />,
+        type: "chatgpt",
+        configOptions: {
+
+        }
+    },
+    catphoto: {
+        name: "Random Cat Photo",
+        description: "View a random cat photo",
+        icon: CatIcon,
+        createComponent: (config: any, setConfig: any) => <RandomcatImageCard />,
+        type: "catphoto",
+        configOptions: {
+
+        }
+    },
+    dictionary: {
+        name: "Dictionary",
+        description: "View the definition of a word",
+        icon: BookIcon,
+        createComponent: (config: any, setConfig: any) => <DictionaryCard />,
+        type: "dictionary",
+        configOptions: {
+
+        }
+    }
 }

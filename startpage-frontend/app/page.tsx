@@ -4,7 +4,7 @@ import { SearchBox } from "@/components/searchbox";
 import { useState, useEffect, useRef, useContext } from "react";
 import { createContext } from "react";
 import { useAuth } from "keystone-lib";
-import { AskChatGPTCard, CalculatorCard, CardBase, ClockCard, DictionaryCard, FacebookCard, HackclubSiegeLeaderboardCard, RandomcatImageCard, WeatherCard } from "@/components/cards";
+import { AskChatGPTCard, CalculatorCard, CardBase, CardInfo, ClockCard, DictionaryCard, FacebookCard, HackclubSiegeLeaderboardCard, RandomcatImageCard, WeatherCard, WidgetInfo, WidgetType } from "@/components/cards";
 import { createSwapy, Swapy } from 'swapy'
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,31 @@ import GridLayout, { Responsive } from "react-grid-layout";
 import { useWindowSize } from "@/lib/screensize";
 import { CalculatorIcon, CloudIcon, FacebookIcon, ListIcon, PlusIcon, SearchIcon, SettingsIcon, SparkleIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+type ShortcutType = {
+  id: string;
+  name: string;
+  url: string;
+  icon: string;
+}
+
+type WidgetConfigType = {
+  id: string;
+  position: { x: number, y: number, w: number, h: number };
+  component: {
+    type: WidgetType;
+    config: any;
+  };
+}
+
+type configType = {
+  searchbox: {
+    shortcuts: ShortcutType[],
+    color: string
+  },
+  columns: number,
+  widgets: WidgetConfigType[]
+}
 
 export const StartPageContext = createContext({
   isEditing: false,
@@ -28,15 +53,25 @@ export const StartPageContext = createContext({
       {
         id: new Date().toISOString() + "_ranid_" + Math.floor(Math.random() * 1000000),
         position: { x: 0, y: 0, w: 1, h: 6 },
-        component: <FacebookCard profileName="LinusTech" />
+        component: {
+          type: "facebook",
+          config: {
+            profileName: "LinusTech"
+          }
+        }
       },
       {
         id: new Date().toISOString() + "_ranid_" + Math.floor(Math.random() * 1000000),
         position: { x: 1, y: 0, w: 1, h: 6 },
-        component: <WeatherCard location="london" />
+        component: {
+          type: "weather",
+          config: {
+            location: "london"
+          }
+        }
       }
     ]
-  },
+  } as configType,
   usingWork: false,
   setUsingWork: (value: boolean) => { },
   hasWork: false,
@@ -44,15 +79,13 @@ export const StartPageContext = createContext({
   authHook: null as any,
 })
 
-type WidgetType = "facebook" | "weather" | "chatgpt" | "settings" | "siegeleaderboard";
-
-function addWidget({ type }: { type: WidgetType }, config: any, setConfig: (value: any) => void) {
+function addWidget({ widgetInfo }: { widgetInfo: WidgetInfo }, config: any, setConfig: (value: any) => void) {
   const newItem = {
     id: new Date().toISOString() + "_ranid_" + Math.floor(Math.random() * 1000000),
     position: { x: 0, y: 0, w: 1, h: 6 },
     component: {
-      type: type,
-      config: {}
+      type: widgetInfo.type,
+      config: Object.fromEntries(Object.entries(widgetInfo.configOptions).map(([key, value]) => [key, value.defaultValue]))
     }
   }
   setConfig({
@@ -137,11 +170,9 @@ export default function Home() {
                 <Button variant="outline"><PlusIcon />Add Widget</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => addWidget({ type: "facebook" }, config, setConfig)}><FacebookIcon />Facebook</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => addWidget({ type: "weather" }, config, setConfig)}><CloudIcon />Weather</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => addWidget({ type: "chatgpt" }, config, setConfig)}><SparkleIcon />ChatGPT</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => addWidget({ type: "siegeleaderboard" }, config, setConfig)}><ListIcon />Siege Leaderboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => addWidget({ type: "calculator" }, config, setConfig)}><CalculatorIcon />Calculator</DropdownMenuItem>
+                {Object.entries(CardInfo).map(([key, value]) => (
+                  <DropdownMenuItem key={key} onClick={() => addWidget({ widgetInfo: value }, config, setConfig)}><value.icon />{value.name}</DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </motion.div>}
@@ -168,28 +199,13 @@ export default function Home() {
             })
           }}
         >
-          {config.widgets.map((widget: any) => (
+          {config.widgets.map((widget: WidgetConfigType) => (
             <div key={widget.id} data-grid={widget.position}>
-              <CardBase id={widget.id} globalConfig={config} setGlobalConfig={setConfig} content={getComponent(widget.component)} name={widget.component.type} />
+              <CardBase id={widget.id} globalConfig={config} setGlobalConfig={setConfig} content={CardInfo[widget.component.type].createComponent(widget.component.config, setConfig)} name={CardInfo[widget.component.type].name} />
             </div>
           ))}
         </GridLayout>
       </div>
     </StartPageContext.Provider>
   );
-}
-
-function getComponent(component: { type: WidgetType, config: any }) {
-  switch (component.type) {
-    case "facebook":
-      return <FacebookCard profileName={component.config.profileName} />;
-    case "weather":
-      return <WeatherCard location={component.config.location} />;
-    case "chatgpt":
-      return <AskChatGPTCard />;
-    case "siegeleaderboard":
-      return <HackclubSiegeLeaderboardCard />;
-    default:
-      return <div>Unknown component type</div>;
-  }
 }
