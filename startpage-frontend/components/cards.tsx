@@ -11,9 +11,107 @@ export function FacebookCard({
 }: {
     profileName: string
 }) {
+    const ref = useRef<HTMLDivElement>(null)
+    const iframeRef = useRef<HTMLIFrameElement>(null)
+    useEffect(() => {
+        iframeRef.current?.contentWindow?.postMessage({
+            type: "resize",
+            width: ref.current?.offsetWidth,
+            height: ref.current?.offsetHeight
+        }, "*")
+    }, [ref.current?.offsetWidth, ref.current?.offsetHeight]);
+    return (
+        <div ref={ref} style={{ width: "100%", height: "100%" }}>
+            <iframe ref={iframeRef} src={"https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F" + profileName + "&tabs=timeline&width=" + ref.current?.offsetWidth + "&height=" + ref.current?.offsetHeight + "&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"} width={ref.current?.offsetWidth} height={ref.current?.offsetHeight} style={{ border: "none", overflow: "hidden" }} scrolling="no" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+        </div>
+    )
+}
+
+type WeatherData = {
+    temperature: string;
+    wind: string;
+    description: string;
+    forecast: {
+        day: string;
+        temperature: string;
+        wind: string;
+    }[];
+}
+
+export function ClockCard() {
+    const [time, setTime] = useState(new Date())
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(new Date())
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [])
+    return (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+            <h2 className="text-5xl">{time.getHours().toString().padStart(2, "0") + ":" + time.getMinutes().toString().padStart(2, "0") + ":" + time.getSeconds().toString().padStart(2, "0")}</h2>
+            <div>{time.toLocaleDateString()}</div>
+        </div>
+    )
+}
+
+export type HackclubSiegeLeaderboardPlayer = {
+    id: number
+    slack_id: string
+    name: string
+    display_name: string
+    coins: number
+    rank: string
+}
+
+export function HackclubSiegeLeaderboardCard() {
+    const [leaderboard, setLeaderboard] = useState({ data: {} as HackclubSiegeLeaderboardPlayer[], loaded: false })
+    useEffect(() => {
+        if (leaderboard.loaded) return;
+        fetch("https://api.thebugging.com/cors-proxy?" + encodeURIComponent("https://siege.hackclub.com/api/public-beta/leaderboard"))
+            .then(response => response.json())
+            .then(data => setLeaderboard({ data: data.leaderboard as HackclubSiegeLeaderboardPlayer[], loaded: true }))
+    }, [leaderboard])
+    return (
+        <div style={{ maxHeight: "100%", width: "100%", height: "100%", overflowY: "scroll", padding: "10px" }}>
+            {leaderboard.loaded ? (
+                <div>
+                    {leaderboard.data?.map((player: HackclubSiegeLeaderboardPlayer) => (
+                        <div key={player.id} style={{ display: "flex", flexDirection: "row", gap: "10px", minWidth: "0" }}>
+                            <h3 style={{ minWidth: "0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: "bold" }}>{player.name}</h3>
+                            <div style={{ flex: 1 }} />
+                            <h4>{player.coins}</h4>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div>Loading...</div>
+            )}
+        </div>
+    )
+}
+
+export function WeatherCard({ location }: { location: string }) {
+    const [weather, setWeather] = useState({ data: {} as WeatherData, loaded: false })
+    useEffect(() => {
+        if (weather.loaded) return;
+        fetch("https://goweather.xyz/weather/" + location)
+            .then(response => response.json())
+            .then(data => setWeather({ data: data as WeatherData, loaded: true }))
+    }, [weather])
     return (
         <div>
-            <iframe src={"https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F" + profileName + "&tabs=timeline&width=340&height=331&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"} width="340" height="331" style={{ border: "none", overflow: "hidden" }} scrolling="no" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+            {weather.loaded ? (
+                <div className="flex flex-col w-full h-full gap-2">
+                    <h1>{location}</h1>
+                    <h2>{weather.data?.temperature}</h2>
+                    <h2>{weather.data?.wind}</h2>
+                    <h2>{weather.data?.description}</h2>
+                    <div style={{ flex: 1 }} />
+                    <div>Powered by <a className="underline" href="https://github.com/robertoduessmann/weather-api">Weather-API</a></div>
+                </div>
+            ) : (
+                <div>Loading...</div>
+            )}
         </div>
     )
 }
