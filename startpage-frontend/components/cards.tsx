@@ -3,6 +3,8 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Parser } from 'expr-eval';
 import { StartPageContext } from "@/app/page";
+import { ActivityIcon, BoxIcon, SearchIcon, SendIcon, SparkleIcon, XIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 const parser = new Parser();
 
@@ -75,17 +77,38 @@ export function HackclubSiegeLeaderboardCard() {
         <div style={{ maxHeight: "100%", width: "100%", height: "100%", overflowY: "scroll", padding: "10px" }}>
             {leaderboard.loaded ? (
                 <div>
-                    {leaderboard.data?.map((player: HackclubSiegeLeaderboardPlayer) => (
+                    {leaderboard.data?.map((player: HackclubSiegeLeaderboardPlayer, index: number) => (
                         <div key={player.id} style={{ display: "flex", flexDirection: "row", gap: "10px", minWidth: "0" }}>
-                            <h3 style={{ minWidth: "0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: "bold" }}>{player.name}</h3>
+                            <h3 style={{ minWidth: "0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: "bold", color: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "var(--qu-text-color)" }}>{player.name}</h3>
                             <div style={{ flex: 1 }} />
-                            <h4>{player.coins}</h4>
+                            <h4 style={{ color: index === 0 ? "#FFD700" : index === 1 ? "#C0C0C0" : index === 2 ? "#CD7F32" : "var(--qu-text-color)" }}>{player.coins}</h4>
                         </div>
                     ))}
                 </div>
             ) : (
                 <div>Loading...</div>
             )}
+        </div>
+    )
+}
+
+export function AskChatGPTCard() {
+    const [query, setQuery] = useState("");
+    return (
+        <div>
+            <h1 className="text-2xl mb-2">Ask ChatGPT</h1>
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+                <Input placeholder="Ask ChatGPT" onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        window.open("https://chatgpt.com?q=" + encodeURIComponent(query), "_blank");
+                        setQuery("");
+                    }
+                }} value={query} onChange={(e) => setQuery(e.target.value)} />
+                <Button onClick={() => {
+                    window.open("https://chatgpt.com?q=" + encodeURIComponent(query), "_blank");
+                    setQuery("");
+                }} variant={"outline"}><SendIcon />Ask</Button>
+            </div>
         </div>
     )
 }
@@ -108,6 +131,67 @@ export function WeatherCard({ location }: { location: string }) {
                     <h2>{weather.data?.description}</h2>
                     <div style={{ flex: 1 }} />
                     <div>Powered by <a className="underline" href="https://github.com/robertoduessmann/weather-api">Weather-API</a></div>
+                </div>
+            ) : (
+                <div>Loading...</div>
+            )}
+        </div>
+    )
+}
+
+export function RandomcatImageCard() {
+    return (
+        <div style={{ width: "100%", height: "100%" }}>
+            <img style={{ width: "100%", height: "100%", objectFit: "cover" }} src="https://cataas.com/cat" alt="Random cat" />
+        </div>
+    )
+}
+
+export type DictionaryDefinition = {
+    word: string
+    phonetic: string
+    meanings: {
+        partOfSpeech: string
+        definitions: {
+            definition: string
+            example: string
+        }[]
+    }[]
+}
+
+export function DictionaryCard() {
+    const [query, setQuery] = useState("");
+    const [definition, setDefinition] = useState({ data: {} as DictionaryDefinition[], loaded: false })
+    return (
+        <div style={{ width: "100%", height: "100%" }}>
+            <div style={{ borderBottom: "1px solid var(--qu-border-color)", display: "flex", flexDirection: "column", gap: "10px", alignItems: "start", padding: "10px", width: "100%" }}>
+                <div className="text-2xl">Dictionary</div>
+                <div className="flex flex-row gap-2 w-full">
+                    <Input type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+                    <Button variant={"outline"} onClick={() => {
+                        if (query === "") return;
+                        fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + query)
+                            .then(response => response.json())
+                            .then(data => setDefinition({ data: data as DictionaryDefinition[], loaded: true }))
+                    }}><SearchIcon /></Button>
+                </div>
+            </div>
+            {definition.loaded ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "start", overflowY: "auto", height: "calc(100% - 99px)", maxHeight: "calc(100% - 99px)", padding: "10px" }}>
+                    {definition.data[0]?.meanings?.map((meaning: any, index: number) => (
+                        <div key={index} style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "start" }}>
+                            <div className="flex flex-row gap-2 items-center">
+                                {meaning.partOfSpeech === "noun" ? <BoxIcon size={20} /> : meaning.partOfSpeech === "verb" ? <ActivityIcon size={20} /> : meaning.partOfSpeech === "adjective" ? <SparkleIcon size={20} /> : meaning.partOfSpeech === "adverb" ? <SparkleIcon size={20} /> : null}
+                                <h3 style={{ fontWeight: "bold" }}>{meaning.partOfSpeech}</h3>
+                            </div>
+                            {meaning.definitions.map((definition: any, index: number) => (
+                                <div key={index}>
+                                    <h4 style={{ textAlign: "left" }}>{definition.definition}</h4>
+                                    <p style={{ textAlign: "left" }}>{definition.example}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div>Loading...</div>
@@ -201,11 +285,22 @@ export function CalculatorCard() {
     </div>
 }
 
-export function CardBase({ name, content }: { name: string, content: React.ReactNode }) {
+export function CardBase({ id, name, content, globalConfig, setGlobalConfig }: { id: string, name: string, content: React.ReactNode, globalConfig: any, setGlobalConfig: any }) {
     const { isEditing } = useContext(StartPageContext);
     return (
         <div className="card-base">
-            <div className="card-title" style={{ cursor: isEditing ? "move" : "default", pointerEvents: isEditing ? "auto" : "none" }} data-swapy-handle>{name}</div>
+            <div className="card-title" style={{ cursor: isEditing ? "move" : "default", pointerEvents: isEditing ? "auto" : "none" }}>
+                {isEditing && <div style={{ width: 10, flexShrink: 0 }} />}
+                <div className="card-title-text" style={{ flexShrink: 0 }}>{name}</div>
+                {isEditing && <motion.div initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ type: "tween", duration: 0.1 }}></motion.div>}
+                {isEditing && <XIcon style={{ flexShrink: 0, cursor: "pointer" }} className="card-title-close card-title-nodrag" size={16} onClick={(e) => {
+                    e.stopPropagation();
+                    console.log("editing");
+                    let widgets = globalConfig.widgets.filter((widget: any) => widget.id !== id);
+                    setGlobalConfig({ ...globalConfig, widgets });
+                }} />}
+                {isEditing && <div style={{ width: 5, flexShrink: 0 }} />}
+            </div>
             <div className="card-content">
                 {content}
             </div>
