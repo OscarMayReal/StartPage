@@ -50,7 +50,7 @@ export function EditDrawer() {
                                 file.type = "file";
                                 file.accept = ".json";
                                 file.onchange = (e) => {
-                                    const file = e.target.files?.[0];
+                                    const file = (e.target as HTMLInputElement)?.files?.[0];
                                     if (file) {
                                         const reader = new FileReader();
                                         reader.onload = (e) => {

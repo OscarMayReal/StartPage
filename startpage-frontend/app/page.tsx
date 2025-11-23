@@ -107,7 +107,7 @@ export default function Home() {
       setHasWork(true);
     }
   }, [authHook.data]);
-  const [config, setConfig] = useState(JSON.parse(window?.localStorage.getItem("config") || null) || {
+  const [config, setConfig] = useState<configType>({
     searchbox: {
       shortcuts: [
         {
@@ -126,31 +126,24 @@ export default function Home() {
       color: "#097452"
     },
     columns: 3,
-    widgets: [
-      {
-        id: "facebook_1",
-        position: { i: "facebook_1", x: 0, y: 0, w: 1, h: 6 },
-        component: {
-          type: "facebook",
-          config: {
-            profileName: "LinusTech"
-          }
-        }
-      },
-      {
-        id: "weather_1",
-        position: { i: "weather_1", x: 1, y: 0, w: 1, h: 6 },
-        component: {
-          type: "weather",
-          config: {
-            location: "london"
-          }
-        }
-      }
-    ]
+    widgets: []
   });
+
+  // Load config from localStorage on mount (client-side only)
   useEffect(() => {
-    window.localStorage.setItem("config", JSON.stringify(config));
+    const savedConfig = localStorage.getItem("config");
+    if (savedConfig) {
+      try {
+        setConfig(JSON.parse(savedConfig));
+      } catch (e) {
+        console.error("Failed to parse saved config:", e);
+      }
+    }
+  }, []);
+
+  // Save config to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("config", JSON.stringify(config));
     console.log(config);
   }, [config]);
   const [usingWork, setUsingWork] = useState(false);
