@@ -136,6 +136,7 @@ header {
   justify-content: center;
   position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
 .card-title {
@@ -164,6 +165,7 @@ header {
   max-height: calc(100% - 30px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 @theme inline {

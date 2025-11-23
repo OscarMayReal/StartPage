@@ -3,8 +3,9 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Parser } from 'expr-eval';
 import { StartPageContext } from "@/app/page";
-import { ActivityIcon, BookIcon, BoxIcon, CalculatorIcon, CatIcon, ClockIcon, FacebookIcon, SearchIcon, SendIcon, Sparkle, SparkleIcon, SparklesIcon, SunIcon, XIcon } from "lucide-react";
+import { ActivityIcon, BookIcon, BoxIcon, CalculatorIcon, CatIcon, ClockIcon, FacebookIcon, LinkIcon, PencilIcon, SearchIcon, SendIcon, Sparkle, SparkleIcon, SparklesIcon, SunIcon, XIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 
 const parser = new Parser();
 
@@ -167,7 +168,14 @@ export function DictionaryCard() {
             <div style={{ borderBottom: "1px solid var(--qu-border-color)", display: "flex", flexDirection: "column", gap: "10px", alignItems: "start", padding: "10px", width: "100%" }}>
                 <div className="text-2xl">Dictionary</div>
                 <div className="flex flex-row gap-2 w-full">
-                    <Input type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+                    <Input type="text" value={query} placeholder="Search" onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            if (query === "") return;
+                            fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + query)
+                                .then(response => response.json())
+                                .then(data => setDefinition({ data: data as DictionaryDefinition[], loaded: true }))
+                        }
+                    }} onChange={(e) => setQuery(e.target.value)} />
                     <Button variant={"outline"} onClick={() => {
                         if (query === "") return;
                         fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + query)
@@ -285,14 +293,29 @@ export function CalculatorCard() {
     </div>
 }
 
-export function CardBase({ id, name, content, globalConfig, setGlobalConfig }: { id: string, name: string, content: React.ReactNode, globalConfig: any, setGlobalConfig: any }) {
+export function IframeCard({ url }: { url: string }) {
+    return (
+        <iframe src={url} style={{ width: "100%", height: "100%" }}></iframe>
+    )
+}
+
+export function CardBase({ id, name, content, globalConfig, setGlobalConfig, widgetConfig, setWidgetConfig, type }: { id: string, name: string, content: React.ReactNode, globalConfig: any, setGlobalConfig: any, widgetConfig: any, setWidgetConfig: any, type: WidgetType }) {
     const { isEditing } = useContext(StartPageContext);
+    const [isEditingCard, setIsEditingCard] = useState(false);
     return (
         <div className="card-base">
             <div className="card-title" style={{ cursor: isEditing ? "move" : "default", pointerEvents: isEditing ? "auto" : "none" }}>
                 {isEditing && <div style={{ width: 10, flexShrink: 0 }} />}
                 <div className="card-title-text" style={{ flexShrink: 0 }}>{name}</div>
                 {isEditing && <motion.div initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ type: "tween", duration: 0.1 }}></motion.div>}
+                {isEditing && CardInfo[type].canEdit && <>
+                    <PencilIcon style={{ flexShrink: 0, cursor: "pointer" }} className="card-title-edit card-title-nodrag" size={16} onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("editing");
+                        setIsEditingCard(true);
+                    }} />
+                    <div style={{ width: 5, flexShrink: 0 }} />
+                </>}
                 {isEditing && <XIcon style={{ flexShrink: 0, cursor: "pointer" }} className="card-title-close card-title-nodrag" size={16} onClick={(e) => {
                     e.stopPropagation();
                     console.log("editing");
@@ -304,11 +327,39 @@ export function CardBase({ id, name, content, globalConfig, setGlobalConfig }: {
             <div className="card-content">
                 {content}
             </div>
+            {CardInfo[type].canEdit && <EditCard open={isEditingCard} setOpen={setIsEditingCard} widgetConfig={widgetConfig} setWidgetConfig={setWidgetConfig} type={type} />}
         </div>
+
     )
 }
 
-export type WidgetType = "facebook" | "weather" | "chatgpt" | "siegeleaderboard" | "calculator" | "clock" | "catphoto" | "dictionary";
+export function EditCard({ open, setOpen, widgetConfig, setWidgetConfig, type }: { open: boolean, setOpen: (open: boolean) => void, widgetConfig: any, setWidgetConfig: (config: any) => void, type: WidgetType }) {
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit {CardInfo[type].name}</DialogTitle>
+                    <DialogDescription>Edit the configuration of {CardInfo[type].name}</DialogDescription>
+                </DialogHeader>
+                {Object.entries(CardInfo[type].configOptions).map(([key, option]) => {
+                    return (
+                        <div key={key}>
+                            <div style={{ marginBottom: 5 }}>{option.name}</div>
+                            <Input type={option.type} value={widgetConfig[key]} onChange={(e) => setWidgetConfig({ ...widgetConfig, [key]: e.target.value })} />
+                        </div>
+                    )
+                })}
+                <DialogFooter style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
+                    <DialogClose asChild>
+                        <Button variant="outline"><XIcon />Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+export type WidgetType = "facebook" | "weather" | "chatgpt" | "siegeleaderboard" | "calculator" | "clock" | "catphoto" | "dictionary" | "iframe";
 
 export type WidgetInfo = {
     name: string;
@@ -317,6 +368,7 @@ export type WidgetInfo = {
     createComponent: (config: any, setConfig: any) => React.ReactNode;
     type: WidgetType;
     configOptions: Record<string, WidgetConfigSchema>;
+    canEdit: boolean;
 }
 
 export type WidgetConfigSchema = {
@@ -335,7 +387,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "siegeleaderboard",
         configOptions: {
 
-        }
+        },
+        canEdit: false
     },
     calculator: {
         name: "Calculator",
@@ -345,7 +398,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "calculator",
         configOptions: {
 
-        }
+        },
+        canEdit: false
     },
     weather: {
         name: "Weather",
@@ -360,7 +414,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
                 defaultValue: "London",
                 field: "location"
             }
-        }
+        },
+        canEdit: true
     },
     clock: {
         name: "Clock",
@@ -370,7 +425,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "clock",
         configOptions: {
 
-        }
+        },
+        canEdit: false
     },
     facebook: {
         name: "Facebook",
@@ -385,7 +441,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
                 defaultValue: "facebook",
                 field: "page"
             }
-        }
+        },
+        canEdit: true
     },
     chatgpt: {
         name: "ChatGPT",
@@ -395,7 +452,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "chatgpt",
         configOptions: {
 
-        }
+        },
+        canEdit: false
     },
     catphoto: {
         name: "Random Cat Photo",
@@ -405,7 +463,8 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "catphoto",
         configOptions: {
 
-        }
+        },
+        canEdit: false
     },
     dictionary: {
         name: "Dictionary",
@@ -415,6 +474,23 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         type: "dictionary",
         configOptions: {
 
-        }
+        },
+        canEdit: false
+    },
+    iframe: {
+        name: "Iframe",
+        description: "View an iframe",
+        icon: LinkIcon,
+        createComponent: (config: any, setConfig: any) => <IframeCard url={config.url} />,
+        type: "iframe",
+        configOptions: {
+            url: {
+                name: "URL",
+                type: "text",
+                defaultValue: "https://www.google.com",
+                field: "url"
+            }
+        },
+        canEdit: true
     }
 }

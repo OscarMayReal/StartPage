@@ -24,7 +24,7 @@ export function Header() {
             {isEditing && <EditDrawer />}
             {!usingWork && <Button variant={isEditing ? "default" : "ghost"} size={"sm"} onClick={() => setIsEditing(!isEditing)}>
                 {isEditing ? <CheckIcon /> : <PencilIcon />}
-                {isEditing ? "Save" : "Edit"}
+                {isEditing ? "Finish" : "Edit"}
             </Button>}
             <div style={{ width: 10 }} />
         </header>

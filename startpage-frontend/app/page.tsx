@@ -157,8 +157,8 @@ export default function Home() {
   const screenSize = useWindowSize();
   return (
     <StartPageContext.Provider value={{ isEditing, setIsEditing, config, setConfig, usingWork, setUsingWork, hasWork, authHook: usingWork ? authHook : null }}>
-      <div>
-        <Header />
+      <Header />
+      <div style={{ height: "calc(100vh - 50px)", overflowY: "auto" }}>
         <SearchBox />
         {/* <FacebookCard profileName="LinusTech"/> */}
         {/* <CalculatorCard /> */}
@@ -201,7 +201,7 @@ export default function Home() {
         >
           {config.widgets.map((widget: WidgetConfigType) => (
             <div key={widget.id} data-grid={widget.position}>
-              <CardBase id={widget.id} globalConfig={config} setGlobalConfig={setConfig} content={CardInfo[widget.component.type].createComponent(widget.component.config, setConfig)} name={CardInfo[widget.component.type].name} />
+              <CardBase id={widget.id} type={widget.component.type} globalConfig={config} setGlobalConfig={setConfig} content={CardInfo[widget.component.type].createComponent(widget.component.config, (value: any) => setConfig({ ...config, widgets: config.widgets.map((widget: any) => widget.id === widget.id ? { ...widget, component: { ...widget.component, config: value } } : widget) }))} name={CardInfo[widget.component.type].name} widgetConfig={widget.component.config} setWidgetConfig={(value: any) => setConfig({ ...config, widgets: config.widgets.map((widget: any) => widget.id === widget.id ? { ...widget, component: { ...widget.component, config: value } } : widget) })} />
             </div>
           ))}
         </GridLayout>
