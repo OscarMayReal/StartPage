@@ -19,21 +19,21 @@ export function SearchBox() {
     const handleSearch = (e: React.KeyboardEvent<HTMLInputElement> | null) => {
         if (e?.key === "Enter") {
             setSearchQuery("");
-            window.open(`https://www.google.com/search?q=${searchQuery}`, "_blank");
+            window.open(`https://www.google.com/search?q=${searchQuery}`, "_self");
         } else if (e === null) {
             setSearchQuery("");
-            window.open(`https://www.google.com/search?q=${searchQuery}`, "_blank");
+            window.open(`https://www.google.com/search?q=${searchQuery}`, "_self");
         }
     };
     return (
         <AnimatePresence>
-            <div className="SearchBoxArea" style={{backgroundColor: config.searchbox.color}}>
-                {isEditing && <motion.div key="searchbox-customization" exit={{opacity: 0}} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+            <div className="SearchBoxArea" style={{ backgroundColor: config.searchbox.color }}>
+                {isEditing && <motion.div key="searchbox-customization" exit={{ opacity: 0 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
                     <Popover key="searchbox-customization-popover">
                         <PopoverTrigger asChild>
-                            <Button size={"sm"} variant="outline" style={{position: "absolute", top: 10, right: 10}}><PaletteIcon />Customize</Button>
+                            <Button size={"sm"} variant="outline" style={{ position: "absolute", top: 10, right: 10 }}><PaletteIcon />Customize</Button>
                         </PopoverTrigger>
-                        <PopoverContent side="bottom" align="end" sideOffset={10} style={{minWidth: "0px", width: "auto", padding: 0, boxShadow: "none"}}>
+                        <PopoverContent side="bottom" align="end" sideOffset={10} style={{ minWidth: "0px", width: "auto", padding: 0, boxShadow: "none" }}>
                             <SketchPicker onChange={(e) => {
                                 setConfig({
                                     ...config,
@@ -49,24 +49,24 @@ export function SearchBox() {
 
                 <div className="SearchBoxRow">
                     <Input className="bg-white" placeholder="Search with Google" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyPress={handleSearch} />
-                    <Button variant="outline" onClick={() => {handleSearch(null)}}><SearchIcon />Search</Button>
+                    <Button variant="outline" onClick={() => { handleSearch(null) }}><SearchIcon />Search</Button>
                 </div>
                 {(isEditing || config.searchbox.shortcuts.length > 0) && <div className="SearchBoxShortcutsRow">
                     {config.searchbox.shortcuts.map((shortcut, index) => (
-                        <ShortcutItem key={index} shortcut={shortcut}/>
+                        <ShortcutItem key={index} shortcut={shortcut} />
                     ))}
-                    {isEditing && <AddShortcutItem/>}
+                    {isEditing && <AddShortcutItem />}
                 </div>}
             </div>
         </AnimatePresence>
     )
 }
 
-function ShortcutItem({shortcut}: {shortcut: any}) {
+function ShortcutItem({ shortcut }: { shortcut: any }) {
     const { isEditing, setIsEditing, config, setConfig } = useContext(StartPageContext);
     return (
         <div className="SearchBoxShortcutItem" onClick={() => {
-            window.open(shortcut.url, "_blank");
+            window.open(shortcut.url, "_self");
         }}>
             {isEditing && <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -77,9 +77,9 @@ function ShortcutItem({shortcut}: {shortcut: any}) {
                 <DropdownMenuContent onClick={e => {
                     e.stopPropagation();
                 }}>
-                    <DropdownMenuItem onClick={() => {
-                        
-                    }}><PencilIcon />Edit</DropdownMenuItem>
+                    {/* <DropdownMenuItem onClick={() => {
+
+                    }}><PencilIcon />Edit</DropdownMenuItem> */}
                     <DropdownMenuItem onClick={() => {
                         setConfig({
                             ...config,
@@ -91,7 +91,7 @@ function ShortcutItem({shortcut}: {shortcut: any}) {
                     }}><TrashIcon />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>}
-            <img src={shortcut.icon} alt={shortcut.name} className="SearchBoxShortcutIcon"/>
+            <img src={shortcut.icon} alt={shortcut.name} className="SearchBoxShortcutIcon" />
             <div className="SearchBoxShortcutText">{shortcut.name}</div>
             {/* <div className="SearchBoxShortcutSubText">Quickly Access Websites</div> */}
         </div>
@@ -114,7 +114,7 @@ function AddShortcutItem() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <motion.div key="add-shortcut" exit={{opacity: 0}} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="SearchBoxShortcutItem">
+                <motion.div key="add-shortcut" exit={{ opacity: 0 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="SearchBoxShortcutItem">
                     <div className="SearchBoxShortcutIcon"><PlusIcon size={25} /></div>
                     <div className="SearchBoxShortcutText">Add Shortcut</div>
                     {/* <div className="SearchBoxShortcutSubText">Quickly Access Websites</div> */}
@@ -154,4 +154,4 @@ function AddShortcutItem() {
         </Dialog>
     )
 }
-    
+

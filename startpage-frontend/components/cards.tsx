@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Parser } from 'expr-eval';
 import { StartPageContext } from "@/app/page";
-import { ActivityIcon, BookIcon, BoxIcon, CalculatorIcon, CatIcon, ClockIcon, FacebookIcon, LinkIcon, PencilIcon, SearchIcon, SendIcon, Sparkle, SparkleIcon, SparklesIcon, SunIcon, XIcon } from "lucide-react";
+import { ActivityIcon, BitcoinIcon, BookIcon, BookmarkIcon, BoxIcon, CalculatorIcon, CatIcon, CheckIcon, ClockIcon, FacebookIcon, LinkIcon, ListTodoIcon, MessageSquareIcon, PencilIcon, QuoteIcon, RotateCwIcon, SearchIcon, SendIcon, Sparkle, SparkleIcon, SparklesIcon, SunIcon, TextIcon, TrashIcon, XIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 
@@ -333,7 +333,139 @@ export function CardBase({ id, name, content, globalConfig, setGlobalConfig, wid
     )
 }
 
+export function BitCoinCard({ currency }: { currency: string }) {
+    const [price, setPrice] = useState(0);
+    useEffect(() => {
+        fetch(`https://mempool.space/api/v1/prices`)
+            .then(response => response.json())
+            .then(data => setPrice(data[currency]));
+    }, [currency]);
+    return (
+        <div>
+            <div>Bitcoin Price in {currency}</div>
+            <div>1 BTC = {price}</div>
+            <Button onClick={() => { }}><RotateCwIcon />Update</Button>
+        </div>
+    )
+}
+
+export function BookmarksCard({ config, setConfig }: { config: any, setConfig: (config: any) => void }) {
+    return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", width: "100%" }}>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%", justifyContent: "space-between", padding: 10, borderBottom: "1px solid #e4e4e7" }}>
+                <div className="text-2xl">{config.name}</div>
+                <Button variant="outline" size={"sm"} onClick={() => {
+                    let bookmarks = JSON.parse(config.bookmarks || "[]");
+                    let name = prompt("Enter bookmark name");
+                    let url = prompt("Enter bookmark url");
+                    if (!name || !url) return;
+                    bookmarks.push({ id: Date.now(), name, url });
+                    setConfig({ ...config, bookmarks: JSON.stringify(bookmarks) });
+                }}><BookmarkIcon />Add</Button>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%", overflowY: "auto" }}>
+                {JSON.parse(config.bookmarks || "[]").map((bookmark: any) => {
+                    return (
+                        <a href={bookmark.url} key={bookmark.id} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, width: "100%", padding: 10, borderBottom: "1px solid #e4e4e7" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                                <div className="text-lg">{bookmark.name}</div>
+                                <div className="text-sm" style={{ color: "var(--qu-text-secondary)" }}>{bookmark.url}</div>
+                            </div>
+                            <div style={{ flex: 1 }} />
+                            <Button variant="ghost" size={"icon-sm"} onClick={() => {
+                                let bookmarks = JSON.parse(config.bookmarks || "[]");
+                                bookmarks = bookmarks.filter((b: any) => b.id !== bookmark.id);
+                                setConfig({ ...config, bookmarks: JSON.stringify(bookmarks) });
+                            }}><TrashIcon /></Button>
+                        </a>
+                    )
+                })}
+                {JSON.parse(config.bookmarks || "[]").length === 0 && <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", width: "100%" }}>
+                    <BookmarkIcon size={24} />
+                    <div>No bookmarks found</div>
+                </div>}
+            </div>
+        </div>
+    )
+}
+
+export function ToDoCard({ config, setConfig }: { config: any, setConfig: (config: any) => void }) {
+    return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", width: "100%" }}>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "100%", justifyContent: "space-between", padding: 10, borderBottom: "1px solid #e4e4e7" }}>
+                <div className="text-2xl">{config.name}</div>
+                <Button variant="outline" size={"sm"} onClick={() => {
+                    let todos = JSON.parse(config.todos || "[]");
+                    let name = prompt("Enter todo name");
+                    if (!name) return;
+                    todos.push({ id: Date.now(), name, completed: false });
+                    setConfig({ ...config, todos: JSON.stringify(todos) });
+                }}><BookmarkIcon />Add</Button>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%", overflowY: "auto" }}>
+                {JSON.parse(config.todos || "[]").map((todo: any) => {
+                    return (
+                        <div key={todo.id} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, width: "100%", padding: 10, borderBottom: "1px solid #e4e4e7" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                                <div className="text-lg" style={{ textDecoration: todo.completed ? "line-through" : "none" }}>{todo.name}</div>
+                            </div>
+                            <div style={{ flex: 1 }} />
+                            <Button variant="ghost" size={"icon-sm"} onClick={() => {
+                                let todos = JSON.parse(config.todos || "[]");
+                                todos = todos.map((t: any) => t.id === todo.id ? { ...t, completed: !t.completed } : t);
+                                setConfig({ ...config, todos: JSON.stringify(todos) });
+                            }}><CheckIcon /></Button>
+                            <Button variant="ghost" size={"icon-sm"} onClick={() => {
+                                let todos = JSON.parse(config.todos || "[]");
+                                todos = todos.filter((t: any) => t.id !== todo.id);
+                                setConfig({ ...config, todos: JSON.stringify(todos) });
+                            }}><TrashIcon /></Button>
+                        </div>
+                    )
+                })}
+                {JSON.parse(config.todos || "[]").length === 0 && <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", width: "100%" }}>
+                    <ListTodoIcon size={24} />
+                    <div>No todos found</div>
+                </div>}
+            </div>
+        </div>
+    )
+}
+
+type Quote = {
+    content: string;
+    author: string;
+    authorSlug: string;
+    length: number;
+}
+
+
+
+export function QuoteCard() {
+    const [quote, setQuote] = useState<Quote[]>([]);
+    useEffect(() => {
+        fetch("https://api.realinspire.live/v1/quotes/random")
+            .then(response => response.json())
+            .then(data => setQuote(data as Quote[]));
+    }, []);
+    return (
+        quote.length > 0 ? <div style={{ display: "flex", flexDirection: "column", alignItems: "start", justifyContent: "center", height: "100%", width: "100%", padding: 20, gap: 10 }}>
+            <QuoteIcon size={24} />
+            <div style={{ fontSize: 20, textAlign: "start" }}>{quote[0].content}</div>
+            <div style={{ fontSize: 14, color: "var(--qu-text-secondary)", textAlign: "start" }}> - {quote[0].author}</div>
+        </div> : <div>Loading quote...</div>
+    )
+}
+
 export function EditCard({ open, setOpen, widgetConfig, setWidgetConfig, type }: { open: boolean, setOpen: (open: boolean) => void, widgetConfig: any, setWidgetConfig: (config: any) => void, type: WidgetType }) {
+    const [localconfig, setLocalConfig] = useState(widgetConfig);
+    useEffect(() => {
+        if (!open) {
+            setWidgetConfig(localconfig);
+        } else {
+            setLocalConfig(widgetConfig);
+        }
+    }, [open]);
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent>
@@ -342,10 +474,11 @@ export function EditCard({ open, setOpen, widgetConfig, setWidgetConfig, type }:
                     <DialogDescription>Edit the configuration of {CardInfo[type].name}</DialogDescription>
                 </DialogHeader>
                 {Object.entries(CardInfo[type].configOptions).map(([key, option]) => {
+                    if (option.hide) return null;
                     return (
                         <div key={key}>
                             <div style={{ marginBottom: 5 }}>{option.name}</div>
-                            <Input type={option.type} value={widgetConfig[key]} onChange={(e) => setWidgetConfig({ ...widgetConfig, [key]: e.target.value })} />
+                            <Input type={option.type} value={localconfig[key]} onChange={(e) => setLocalConfig({ ...localconfig, [key]: e.target.value })} />
                         </div>
                     )
                 })}
@@ -359,7 +492,15 @@ export function EditCard({ open, setOpen, widgetConfig, setWidgetConfig, type }:
     )
 }
 
-export type WidgetType = "facebook" | "weather" | "chatgpt" | "siegeleaderboard" | "calculator" | "clock" | "catphoto" | "dictionary" | "iframe";
+export function TextCard({ text }: { text: string }) {
+    return (
+        <div>
+            <div>{text}</div>
+        </div>
+    )
+}
+
+export type WidgetType = "facebook" | "weather" | "chatgpt" | "siegeleaderboard" | "quote" | "calculator" | "clock" | "catphoto" | "dictionary" | "iframe" | "text" | "bitcoin" | "bookmarks" | "todo";
 
 export type WidgetInfo = {
     name: string;
@@ -376,6 +517,7 @@ export type WidgetConfigSchema = {
     type: "text" | "number" | "boolean";
     defaultValue: any;
     field: string;
+    hide?: boolean;
 }
 
 export const CardInfo: Record<WidgetType, WidgetInfo> = {
@@ -390,6 +532,28 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
         },
         canEdit: false
     },
+    todo: {
+        name: "Todo",
+        description: "A simple todo list",
+        icon: ListTodoIcon,
+        createComponent: (config: any, setConfig: any) => <ToDoCard config={config} setConfig={setConfig} />,
+        type: "todo",
+        configOptions: {
+            todos: {
+                name: "Todos",
+                type: "text",
+                defaultValue: "[]",
+                field: "todos"
+            },
+            name: {
+                name: "Name",
+                type: "text",
+                defaultValue: "Todo",
+                field: "name"
+            }
+        },
+        canEdit: true
+    },
     calculator: {
         name: "Calculator",
         description: "A simple calculator",
@@ -400,6 +564,22 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
 
         },
         canEdit: false
+    },
+    bitcoin: {
+        name: "Bitcoin",
+        description: "View the price of Bitcoin",
+        icon: BitcoinIcon,
+        createComponent: (config: any, setConfig: any) => <BitCoinCard currency={config.currency} />,
+        type: "bitcoin",
+        configOptions: {
+            currency: {
+                name: "Currency",
+                type: "text",
+                defaultValue: "GBP",
+                field: "currency"
+            }
+        },
+        canEdit: true
     },
     weather: {
         name: "Weather",
@@ -489,6 +669,56 @@ export const CardInfo: Record<WidgetType, WidgetInfo> = {
                 type: "text",
                 defaultValue: "https://www.google.com",
                 field: "url"
+            }
+        },
+        canEdit: true
+    },
+    text: {
+        name: "Text",
+        description: "View some text",
+        icon: TextIcon,
+        createComponent: (config: any, setConfig: any) => <TextCard text={config.text} />,
+        type: "text",
+        configOptions: {
+            text: {
+                name: "Text",
+                type: "text",
+                defaultValue: "Hello World",
+                field: "text"
+            }
+        },
+        canEdit: true
+    },
+    quote: {
+        name: "Quote",
+        description: "View a random quote",
+        icon: QuoteIcon,
+        createComponent: (config: any, setConfig: any) => <QuoteCard />,
+        configOptions: {
+
+        },
+        type: "quote",
+        canEdit: false
+    },
+    bookmarks: {
+        name: "Bookmarks",
+        description: "View your bookmarks",
+        icon: BookmarkIcon,
+        createComponent: (config: any, setConfig: any) => <BookmarksCard config={config} setConfig={setConfig} />,
+        type: "bookmarks",
+        configOptions: {
+            bookmarks: {
+                name: "Bookmarks",
+                type: "text",
+                defaultValue: "[]",
+                field: "bookmarks",
+                hide: true
+            },
+            name: {
+                name: "Name",
+                type: "text",
+                defaultValue: "Bookmarks",
+                field: "name"
             }
         },
         canEdit: true

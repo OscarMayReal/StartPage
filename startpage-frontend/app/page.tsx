@@ -199,11 +199,14 @@ export default function Home() {
             })
           }}
         >
-          {config.widgets.map((widget: WidgetConfigType) => (
-            <div key={widget.id} data-grid={widget.position}>
-              <CardBase id={widget.id} type={widget.component.type} globalConfig={config} setGlobalConfig={setConfig} content={CardInfo[widget.component.type].createComponent(widget.component.config, (value: any) => setConfig({ ...config, widgets: config.widgets.map((widget: any) => widget.id === widget.id ? { ...widget, component: { ...widget.component, config: value } } : widget) }))} name={CardInfo[widget.component.type].name} widgetConfig={widget.component.config} setWidgetConfig={(value: any) => setConfig({ ...config, widgets: config.widgets.map((widget: any) => widget.id === widget.id ? { ...widget, component: { ...widget.component, config: value } } : widget) })} />
-            </div>
-          ))}
+          {config.widgets.map((widget: WidgetConfigType) => {
+            const currentWidgetId = widget.id;
+            return (
+              <div key={widget.id} data-grid={widget.position}>
+                <CardBase id={widget.id} type={widget.component.type} globalConfig={config} setGlobalConfig={setConfig} content={CardInfo[widget.component.type].createComponent(widget.component.config, (value: any) => setConfig({ ...config, widgets: config.widgets.map((w: any) => w.id === currentWidgetId ? { ...w, component: { ...w.component, config: value } } : w) }))} name={CardInfo[widget.component.type].name} widgetConfig={widget.component.config} setWidgetConfig={(value: any) => setConfig({ ...config, widgets: config.widgets.map((w: any) => w.id === currentWidgetId ? { ...w, component: { ...w.component, config: value } } : w) })} />
+              </div>
+            )
+          })}
         </GridLayout>
       </div>
     </StartPageContext.Provider>
